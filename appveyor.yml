@@ -11,29 +11,22 @@
     - /visual*/
   environment:
     matrix:
+    - BUILD_SYSTEM: "cmake"
+
     - COMPILER: "gcc"
       HOST:     "mingw"
       PLATFORM: "x64"
       SCRIPT:   "make allzstd MOREFLAGS=-static && make -C tests test-symbols fullbench-lib"
       ARTIFACT: "true"
-      BUILD:    "true"
     - COMPILER: "gcc"
       HOST:     "mingw"
       PLATFORM: "x86"
       SCRIPT:   "make allzstd MOREFLAGS=-static"
       ARTIFACT: "true"
-      BUILD:    "true"
     - COMPILER: "clang"
       HOST:     "mingw"
       PLATFORM: "x64"
       SCRIPT:   "MOREFLAGS='--target=x86_64-w64-mingw32 -Werror -Wconversion -Wno-sign-conversion' make allzstd"
-      BUILD:    "true"
-
-    - COMPILER: "gcc"
-      HOST:     "mingw"
-      PLATFORM: "x64"
-      SCRIPT:   ""
-      TEST:     "cmake"
 
     - COMPILER: "visual"
       HOST:     "visual"
@@ -73,7 +66,7 @@
         SET "PATH=%PATH_MINGW32%;%PATH_ORIGINAL%"
       ) )
     )
-  - if [%HOST%]==[mingw] if [%BUILD%]==[true] (
+  - if [%HOST%]==[mingw] (
       make -v &&
       sh -c "%COMPILER% -v" &&
       ECHO Building zlib to static link &&
@@ -104,6 +97,7 @@
           appveyor PushArtifact zstd-win-release-%PLATFORM%.zip
       )
     )
+    
   - if [%HOST%]==[visual] (
       ECHO *** &&
       ECHO *** Building Visual Studio 2008 %PLATFORM%\%CONFIGURATION% in %APPVEYOR_BUILD_FOLDER% &&
@@ -155,17 +149,19 @@
       COPY build\VS2010\bin\%PLATFORM%_%CONFIGURATION%\*.exe tests\
     )
 
-  test_script:
-  - ECHO Testing %COMPILER% %PLATFORM% %CONFIGURATION%
-  - SET "CC=gcc"
-  - SET "CXX=g++"
-  - if [%TEST%]==[cmake] (
+  # using cmake to generate a visual studio project
+  - if [%BUILD_SYSTEM%]==[cmake] (
       mkdir build\cmake\build &&
       cd build\cmake\build &&
       cmake -G "Visual Studio 14 2015 Win64" .. &&
       cd ..\..\.. &&
       make clean
     )
+
+  test_script:
+  - ECHO Testing %COMPILER% %PLATFORM% %CONFIGURATION%
+  - SET "CC=gcc"
+  - SET "CXX=g++"
   - SET "FUZZERTEST=-T30s"
   - if [%HOST%]==[visual] if [%CONFIGURATION%]==[Release] (
       CD tests &&
