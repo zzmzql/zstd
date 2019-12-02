@@ -11,13 +11,12 @@
     - /visual*/
   environment:
     matrix:
-    - BUILD_SYSTEM: "cmake"
-
     - COMPILER: "gcc"
       HOST:     "mingw"
       PLATFORM: "x64"
       SCRIPT:   "make allzstd MOREFLAGS=-static && make -C tests test-symbols fullbench-lib"
       ARTIFACT: "true"
+      INSTALL_TEST: "true"
     - COMPILER: "gcc"
       HOST:     "mingw"
       PLATFORM: "x86"
@@ -44,6 +43,9 @@
       HOST:     "visual"
       PLATFORM: "Win32"
       CONFIGURATION: "Release"
+
+    - BUILD_SYSTEM: "cmake"
+
 
   install:
   - ECHO Installing %COMPILER% %PLATFORM% %CONFIGURATION%
@@ -154,13 +156,11 @@
       mkdir build\cmake\build &&
       cd build\cmake\build &&
       cmake -G "Visual Studio 14 2015 Win64" .. &&
-      cd ..\..\.. 
+      cd ..\..\..
     )
 
   test_script:
   - ECHO Testing %COMPILER% %PLATFORM% %CONFIGURATION%
-  - SET "CC=gcc"
-  - SET "CXX=g++"
   - SET "FUZZERTEST=-T30s"
   - if [%HOST%]==[visual] if [%CONFIGURATION%]==[Release] (
       CD tests &&
@@ -171,6 +171,9 @@
       fuzzer_VS2012_%PLATFORM%_Release.exe %FUZZERTEST% &&
       fuzzer_VS2013_%PLATFORM%_Release.exe %FUZZERTEST% &&
       fuzzer_VS2015_%PLATFORM%_Release.exe %FUZZERTEST%
+    )
+  - if [%INSTALL_TEST%]==[true] (
+      make install
     )
 
 
