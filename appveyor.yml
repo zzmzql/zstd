@@ -97,7 +97,7 @@
           appveyor PushArtifact zstd-win-release-%PLATFORM%.zip
       )
     )
-    
+
   - if [%HOST%]==[visual] (
       ECHO *** &&
       ECHO *** Building Visual Studio 2008 %PLATFORM%\%CONFIGURATION% in %APPVEYOR_BUILD_FOLDER% &&
@@ -154,8 +154,7 @@
       mkdir build\cmake\build &&
       cd build\cmake\build &&
       cmake -G "Visual Studio 14 2015 Win64" .. &&
-      cd ..\..\.. &&
-      make clean
+      cd ..\..\.. 
     )
 
   test_script:
